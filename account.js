@@ -88,17 +88,21 @@ module.exports = {
                 })
                 .then(data => {
                     if (data.response.statusCode == 200) {
-                        console.log(data.params);
-                        fs.appendFile(
-                            './' + OUTPUT_FILENAME,
-                            `${data.params.login}:${data.params.password}\n`,
-                            err => err ? reject(err) : resolve({
-                                username: data.params.login,
-                                password: data.params.password
-                            })
+                        fs.appendFileSync(
+                            './filtered_proxies.txt',
+                            proxySettings + '\n'
                         );
+                        fs.appendFileSync(
+                            './' + OUTPUT_FILENAME,
+                            `${data.params.login}:${data.params.password}\n`
+                        );
+                        resolve({
+                            username: data.params.login,
+                            password: data.params.password
+                        });
+                    } else {
+                        reject(ERROR.ACCOUNT_VALIDATION);
                     }
-                    reject(ERROR.ACCOUNT_VALIDATION);
                 })
                 .catch(err => reject(err));
         });
