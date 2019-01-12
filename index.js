@@ -1,8 +1,8 @@
 const Account = require('./account');
 const fs = require('fs');
 
-var count = 244;
-var PROXY_START_INDEX = 445;
+var count = 0;
+var PROXY_START_INDEX = 0;
 var proxyList = JSON.parse(fs.readFileSync('./proxy_list.json'))
     .slice(PROXY_START_INDEX);
 
