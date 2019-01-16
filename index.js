@@ -14,7 +14,7 @@ if (!fs.existsSync('./proxy_list.txt')) {
 }
 
 var count = 0;
-const PROXY_ARRAY_START_INDEX = 2643;
+const PROXY_ARRAY_START_INDEX = 0;
 var proxyList = fs.readFileSync('./proxy_list.txt', 'utf8');
 
 // Check if proxy_list.txt is not empty
