@@ -48,7 +48,7 @@ if (fs.existsSync('./accounts.txt')) {
                 //console.error(`\x1b[31m[${err.key}] ${err.text}\x1b[0m`);
                 console.log(PROXY_ARRAY_START_INDEX + i, err.code || err.key || err);
             });
-    }, 1000 * i);
+    }, 1400 * i);
     if (loop) {
         setTimeout(() => createAccount(i + 1), 30 * i);
     }

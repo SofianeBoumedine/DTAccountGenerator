@@ -4,7 +4,7 @@ const qs = require('querystring');
 const fs = require('fs');
 
 const OUTPUT_FILENAME = 'accounts.txt';
-const EMAIL_DOMAIN = 'gmail.com';
+const EMAIL_DOMAIN = 'aol.com';
 const CARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const HAAPI_SETTINGS = {
     GUEST_CREATION_URI: 'https://haapi.ankama.com/json/Ankama/v2/Account/CreateGuest?game=20&lang=fr',
@@ -33,10 +33,10 @@ Object.prototype.useAgent = function (agent) {
 };
 
 module.exports = {
-    randomString (withNumber = true, prefixedString = "", suffix = "") {
+    randomString (withNumber = true, stringLength = 8, prefixedString = "", suffix = "") {
         const caracterList = withNumber ? CARACTERS : CARACTERS.substring(0, 52);
     
-        while (prefixedString.length < 8) {
+        while (prefixedString.length < stringLength) {
             prefixedString += caracterList.charAt(Math.floor(Math.random() * caracterList.length));
         }
         return prefixedString + suffix;
@@ -88,13 +88,14 @@ module.exports = {
                 })
                 .then(data => {
                     if (data.response.statusCode == 200) {
+                        console.log(data.params);
                         fs.appendFileSync(
                             './filtered_proxies.txt',
-                            '\n' + proxySettings
+                            proxySettings + '\n'
                         );
                         fs.appendFileSync(
                             './' + OUTPUT_FILENAME,
-                            `\n${data.params.login}:${data.params.password}`
+                            `${data.params.login}:${data.params.password}\n`
                         );
                         resolve({
                             username: data.params.login,
