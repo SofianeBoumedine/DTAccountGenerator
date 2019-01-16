@@ -90,11 +90,11 @@ module.exports = {
                     if (data.response.statusCode == 200) {
                         fs.appendFileSync(
                             './filtered_proxies.txt',
-                            proxySettings + '\n'
+                            '\n' + proxySettings
                         );
                         fs.appendFileSync(
                             './' + OUTPUT_FILENAME,
-                            `${data.params.login}:${data.params.password}\n`
+                            `\n${data.params.login}:${data.params.password}`
                         );
                         resolve({
                             username: data.params.login,

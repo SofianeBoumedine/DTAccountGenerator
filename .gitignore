@@ -1,5 +1,5 @@
 node_modules
 accounts.txt
 filtered_proxies.txt
-proxy_list.json
+proxy_list.txt
 package-lock.json
