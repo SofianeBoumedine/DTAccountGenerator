@@ -18,7 +18,13 @@ const fs = require('fs');
                 proxyList = data
                     .split('\n')
                     .slice(PROXYLIST_ARRAY_INDEX);
-                resolve();
+
+                fs.readFile(config.accountOutputPath, 'utf8', (err, data) => {
+                    if (!err && data.length > 0) {
+                        count = data.split('\n').length;
+                    }
+                    resolve();
+                });
             } else {
                 switch (err.code) {
                     case 'ENOENT':
@@ -32,11 +38,6 @@ const fs = require('fs');
                     default:
                         throw err;
                 }
-            }
-        });
-        fs.readFile(config.accountOutputPath, 'utf8', (err, data) => {
-            if (!err && data.length > 0) {
-                count = data.split('\n').length;
             }
         });
     });

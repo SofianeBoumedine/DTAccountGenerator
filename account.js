@@ -51,20 +51,28 @@ module.exports = config => {
                 lang: 'fr'
             };
             return new Promise((resolve, reject) => {
-                request.get({
-                        url: HAAPI_SETTINGS.VALIDATE_GUEST_URI + '?' + qs.stringify(params)
-                    }.useAgent(agent),
-                    (err, response) => err ? reject(err) : resolve({ response, params })
-                );
+                try {
+                    request.get({
+                            url: HAAPI_SETTINGS.VALIDATE_GUEST_URI + '?' + qs.stringify(params)
+                        }.useAgent(agent),
+                        (err, response) => err ? reject(err) : resolve({ response, params })
+                    );
+                } catch (err) {
+                    reject(err);
+                }
             });
         },
         createGuest () {
             return new Promise((resolve, reject) => {
-                request.get({
-                        url: HAAPI_SETTINGS.GUEST_CREATION_URI
-                    }.useAgent(agent),
-                    (err, response) => err ? reject(err) : resolve(response)
-                );
+                try {
+                    request.get({
+                            url: HAAPI_SETTINGS.GUEST_CREATION_URI
+                        }.useAgent(agent),
+                        (err, response) => err ? reject(err) : resolve(response)
+                    );
+                } catch (err) {
+                    reject(err);
+                }
             });
         },
         create (proxySettings) {
