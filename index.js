@@ -1,55 +1,63 @@
-const Account = require('./account');
+const config = {
+    proxyListPath: './proxy_list.txt',
+    accountOutputPath: './accounts.txt',
+    filteredProxyOutputPath: './filtered_proxies.txt' // Optionnal
+};
+const PROXYLIST_ARRAY_INDEX = 0; // Indicate the starting line in the proxy list
+const PROXY_REQUEST_DELAY = 1000; // A too low request delay may trigger the server's protection and refuse proxies requests. Be carefull modifying this variable!
+var count = 1;
+var proxyList;
+
+const Account = require('./account')(config);
 const fs = require('fs');
 
-var emptyProxyFileError = () => console.log(
-    '\x1b[41m Please fill your proxies in the new proxy_list.txt file as below \x1b[0m',
-    '\n\n\x1b[32mhttp://36.46.126.204:32507\nhttp://178.163.23.244:52077\n... \x1b[0m'
-);
+(function init () {
+    return new Promise(resolve => {
+        fs.readFile(config.proxyListPath, 'utf8', (err, data) => {
+            if (!err && data.length > 0) {
+                proxyList = data
+                    .split('\n')
+                    .slice(PROXYLIST_ARRAY_INDEX);
+                resolve();
+            } else {
+                switch (err.code) {
+                    case 'ENOENT':
+                        console.log(
+                            '\x1b[41m Please fill your proxies in the new proxy_list.txt file as below \x1b[0m',
+                            '\n\n\x1b[32mhttp://36.46.126.204:32507\nhttp://178.163.23.244:52077\n... \x1b[0m'
+                        );
+                        fs.appendFileSync(config.proxyListPath, '');
+                        process.exit(0);
+                        break;
+                    default:
+                        throw err;
+                }
+            }
+        });
+        fs.readFile(config.accountOutputPath, 'utf8', (err, data) => {
+            if (!err && data.length > 0) {
+                count = data.split('\n').length;
+            }
+        });
+    });
+})()
+.then(() => {
+    (function createAccount (i, loop = true) {
+        if (i == proxyList.length) return;
 
-// Create proxy_list.txt if it doesn't exist
-if (!fs.existsSync('./proxy_list.txt')) {
-    emptyProxyFileError();
-    fs.appendFileSync('./proxy_list.txt', '');
-    process.exit(0);
-}
-
-var count = 0;
-const PROXY_ARRAY_START_INDEX = 0;
-var proxyList = fs.readFileSync('./proxy_list.txt', 'utf8');
-
-// Check if proxy_list.txt is not empty
-if (proxyList.length == 0) {
-    emptyProxyFileError();
-    process.exit(0);
-}
-
-proxyList = proxyList
-    .split('\n')
-    .slice(PROXY_ARRAY_START_INDEX);
-
-if (fs.existsSync('./accounts.txt')) {
-    count = fs
-        .readFileSync('./accounts.txt', 'utf8')
-        .split('\n')
-        .length;
-}
-
-(function createAccount (i, loop = true) {
-    if (i == proxyList.length) return;
-
-    setTimeout(() => {
-        Account.create(proxyList[i])
-            .then(data => {
-                count++;
-                console.log(`\x1b[42m [Compte N°${count}] ${data.username}:${data.password} \x1b[0m`);
-                createAccount(i, false);
-            })
-            .catch(err => {
-                //console.error(`\x1b[31m[${err.key}] ${err.text}\x1b[0m`);
-                console.log(PROXY_ARRAY_START_INDEX + i, err.code || err.key || err);
-            });
-    }, 1400 * i);
-    if (loop) {
-        setTimeout(() => createAccount(i + 1), 30 * i);
-    }
-})(0);
+        setTimeout(() => {
+            Account.create(proxyList[i - 1])
+                .then(data => {
+                    count++;
+                    console.log(`\x1b[42m ${PROXYLIST_ARRAY_INDEX + i} [Account #${count}] ${data.username}:${data.password} \x1b[0m`);
+                    createAccount(i, false);
+                })
+                .catch(err => {
+                    console.log(PROXYLIST_ARRAY_INDEX + i, err.code || err.key || err);
+                });
+        }, PROXY_REQUEST_DELAY * i);
+        if (loop) {
+            setTimeout(() => createAccount(i + 1), 10 * i);
+        }
+    })(1);
+});
