@@ -44,8 +44,8 @@ const fs = require('fs');
 })()
 .then(() => {
     (function createAccount (i, loop = true) {
-        if (i == proxyList.length) return;
-
+        if (i == proxyList.length + 1) return;
+        
         setTimeout(() => {
             Account.create(proxyList[i - 1])
                 .then(data => {

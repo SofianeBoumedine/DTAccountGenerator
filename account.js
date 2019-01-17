@@ -51,28 +51,20 @@ module.exports = config => {
                 lang: 'fr'
             };
             return new Promise((resolve, reject) => {
-                try {
-                    request.get({
-                            url: HAAPI_SETTINGS.VALIDATE_GUEST_URI + '?' + qs.stringify(params)
-                        }.useAgent(agent),
-                        (err, response) => err ? reject(err) : resolve({ response, params })
-                    );
-                } catch (err) {
-                    reject(err);
-                }
+                request.get({
+                        url: HAAPI_SETTINGS.VALIDATE_GUEST_URI + '?' + qs.stringify(params)
+                    }.useAgent(agent),
+                    (err, response) => err ? reject(err) : resolve({ response, params })
+                );
             });
         },
         createGuest () {
             return new Promise((resolve, reject) => {
-                try {
-                    request.get({
-                            url: HAAPI_SETTINGS.GUEST_CREATION_URI
-                        }.useAgent(agent),
-                        (err, response) => err ? reject(err) : resolve(response)
-                    );
-                } catch (err) {
-                    reject(err);
-                }
+                request.get({
+                        url: HAAPI_SETTINGS.GUEST_CREATION_URI
+                    }.useAgent(agent),
+                    (err, response) => err ? reject(err) : resolve(response)
+                );
             });
         },
         create (proxySettings) {
@@ -80,6 +72,8 @@ module.exports = config => {
                 agent = new HttpsProxyAgent(proxySettings);
             }
             return new Promise((resolve, reject) => {
+                process.on('uncaughtException', err => reject({ key: 'EDATALOST', err }));
+                
                 this.createGuest()
                     .then(response => {
                         if (response.headers['content-type'] == "application/json") {
