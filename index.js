@@ -12,7 +12,12 @@ const config = {
 const PROXYLIST_ARRAY_INDEX = 0; // Indicate the starting line in the proxy list
 const PROXY_REQUEST_DELAY = 900; // A too low request delay may trigger the server's protection and refuse proxies requests. Be carefull modifying this variable!
 const COUNTRY_CHECK_URL = 'https://hidemyna.me/api/geoip.php?out=js&htmlentities';
-const ALLOWED_COUNTRIES = ['BD', 'BE', 'BJ', 'MM', 'BO', 'CM', 'CA', 'CY', 'FR', 'GB', 'IQ', 'JP', 'LS', 'MO', 'MT', 'MU', 'MN', 'NI', 'NG', 'NP', 'PK', 'PA', 'PG', 'PY', 'PR', 'PE', 'SV', 'SD', 'PS'];
+const ALLOWED_COUNTRIES = [
+    'BD', 'BE', 'BJ', 'MM', 'BO', 'CM', 'CA', 'CY', 'FR', 'GB',
+    'IQ', 'JP', 'LS', 'MO', 'MT', 'MU', 'MN', 'NI', 'NG', 'NP',
+    'PK', 'PA', 'PG', 'PY', 'PR', 'PE', 'SV', 'SD', 'PS'
+];
+const URL_PROTOCOL = /(http|https):\/\//g;
 var count = 1;
 var proxyList;
 var proxyCountriesList;
@@ -33,7 +38,7 @@ process.setMaxListeners(0);
             if (!err) {
                 if (data.length > 0) {
                     proxyList = data
-                        .replace(/\r?\n|\r/g, '→')
+                        .replace(/\r?\n|\r/g, '→') // remove LF and CRLF
                         .split('→')
                         .slice(PROXYLIST_ARRAY_INDEX);
                     
@@ -42,7 +47,7 @@ process.setMaxListeners(0);
                             ip: proxyList
                                 .map(url => url.substring(0, url.indexOf(':', 6)))
                                 .join(',')
-                                .replace(/(http|https):\/\//g, '')
+                                .replace(URL_PROTOCOL, '')
                         }
                     }, (err, response, body) => {
                         if (!err && response.headers['content-type'] == "text/javascript") {
@@ -82,30 +87,31 @@ process.setMaxListeners(0);
         if (i == proxyList.length + 1) return;
         
         var proxyUrl = proxyList[i - 1];
-        var proxyIP = proxyUrl
+        let proxyIP = proxyUrl
             .substring(0, proxyUrl.indexOf(':', 6))
-            .replace(/(http|https):\/\//g, '');
+            .replace(URL_PROTOCOL, '');
 
         let proxyData = proxyCountriesList[proxyIP];
+        var proxyFileLine = PROXYLIST_ARRAY_INDEX + i;
 
         if (proxyData) {
             if (ALLOWED_COUNTRIES.includes(proxyData[0])) {
                 setTimeout(() => {
                     Account.create(proxyUrl)
-                        .then(data => {
+                        .then(params => {
                             count++;
-                            console.log(`\x1b[42m ${PROXYLIST_ARRAY_INDEX + i} [Account #${count}] ${data.username}:${data.password} \x1b[0m`);
+                            console.log(`\x1b[42m ${proxyFileLine} [Account #${count}] ${params.login}:${params.password} \x1b[0m`);
                             createAccount(i, false);
                         })
                         .catch(err => {
-                            console.log(PROXYLIST_ARRAY_INDEX + i, err.code || err.key || err);
+                            console.log(proxyFileLine, err.code || err.key || err);
                         });
                 }, PROXY_REQUEST_DELAY * i);
             } else {
-                console.log(PROXYLIST_ARRAY_INDEX + i, proxyUrl.replace(/(http|https):\/\//, ''), 'invalid_country');
+                console.log(proxyFileLine, proxyUrl.replace(URL_PROTOCOL, ''), 'invalid_country');
             }
         } else {
-            console.log(PROXYLIST_ARRAY_INDEX + i, proxyUrl.replace(/(http|https):\/\//, ''), 'country_not_found');
+            console.log(proxyFileLine, proxyUrl.replace(URL_PROTOCOL, ''), 'country_not_found');
         }
         if (loop) {
             process.nextTick(() => createAccount(i + 1));

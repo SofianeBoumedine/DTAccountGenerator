@@ -3,7 +3,9 @@ const HttpsProxyAgent = require('https-proxy-agent');
 const qs = require('querystring');
 const fs = require('fs');
 
-const CARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const CARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const hasLetter = /[^a-z]+/i;
+const hasNumber = /\d+/;
 const HAAPI_SETTINGS = {
     GUEST_CREATION_URI: 'https://haapi.ankama.com/json/Ankama/v2/Account/CreateGuest?game=20&lang=fr',
     VALIDATE_GUEST_URI: 'https://proxyconnection.touch.dofus.com/haapi/validateGuest',
@@ -20,6 +22,12 @@ const ERROR = {
     }
 };
 var agent = null;
+String.prototype.randomChar = function () {
+    return this.charAt(Math.floor(Math.random() * this.length));
+};
+String.prototype.replaceAt = function(index, replacement) {
+    return this.substr(0, index) + replacement + this.substr(index + replacement.length);
+};
 Object.prototype.useAgent = function (agent, config) {
     if (agent) {
         this.agent = agent;
@@ -35,10 +43,20 @@ Object.prototype.useAgent = function (agent, config) {
 module.exports = config => {
     return {
         randomString (withNumber = true, prefixedString = "", suffix = "") {
-            const caracterList = withNumber ? CARACTERS : CARACTERS.substring(0, 52);
-        
+            const caracterList = withNumber ? CARACTERS + '0123456789' : CARACTERS;
+
             while (prefixedString.length < 8) {
-                prefixedString += caracterList.charAt(Math.floor(Math.random() * caracterList.length));
+                prefixedString += caracterList.randomChar();
+            }
+            if (withNumber) {
+                if (!hasLetter.test(prefixedString)) {
+                    let randomChar = prefixedString.randomChar();
+                    prefixedString = prefixedString.replaceAt(prefixedString.indexOf(randomChar), randomChar);
+                }
+                if (!hasNumber.test(prefixedString)) {
+                    let randomChar = '0123456789'.randomChar();
+                    prefixedString = prefixedString.replaceAt(prefixedString.indexOf(prefixedString.randomChar()), randomChar);
+                }
             }
             return prefixedString + suffix;
         },
@@ -91,7 +109,11 @@ module.exports = config => {
                     })
                     .then(data => {
                         if (data.response.statusCode == 200) {
-                            if (config.filteredProxyOutputPath && config.filteredProxyOutputPath !== false) {
+                            console.log(data.response.body);
+                            if (
+                                config.filteredProxyOutputPath && 
+                                config.filteredProxyOutputPath !== false
+                            ) {
                                 fs.appendFileSync(
                                     config.filteredProxyOutputPath,
                                     proxySettings + '\n'
@@ -101,10 +123,7 @@ module.exports = config => {
                                 config.accountOutputPath,
                                 `${data.params.login}:${data.params.password}\n`
                             );
-                            resolve({
-                                username: data.params.login,
-                                password: data.params.password
-                            });
+                            resolve(data.params);
                         } else {
                             reject(ERROR.ACCOUNT_VALIDATION);
                         }
