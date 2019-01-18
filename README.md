@@ -1,12 +1,33 @@
 # DTAccountGenerator
 Pour créer un compte ayant accès aux serveurs français du jeu, vous 
-devez avoir un proxy qui se trouve dans la liste ci-dessous.
+devez avoir un proxy qui se trouve dans la liste des pays ci-dessous.
 
 - France
 - Belgique
+- Canada
 - Japon
+- Cameroun
+- Chypre
+- Bénin
+- Salvador
+- Gambie
+- Bolivie
 - Népal
 - Paraguay
 - Bangladesh
-
-**Cette liste n'est pas complète, d'autres pays s'ajouteront plus tard**
+- Iraq
+- Lesotho
+- Macao
+- Malte
+- Maurice
+- Mongolie
+- Birmanie
+- Nicaragua
+- Nigeria
+- Pakistan
+- Palestine
+- Panama
+- Papouasie-Nouvelle-Guinée
+- Pérou
+- Porto Rico
+- Soudan

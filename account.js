@@ -3,7 +3,6 @@ const HttpsProxyAgent = require('https-proxy-agent');
 const qs = require('querystring');
 const fs = require('fs');
 
-const EMAIL_DOMAIN = 'aol.com';
 const CARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const HAAPI_SETTINGS = {
     GUEST_CREATION_URI: 'https://haapi.ankama.com/json/Ankama/v2/Account/CreateGuest?game=20&lang=fr',
@@ -21,12 +20,14 @@ const ERROR = {
     }
 };
 var agent = null;
-Object.prototype.useAgent = function (agent) {
+Object.prototype.useAgent = function (agent, config) {
     if (agent) {
         this.agent = agent;
-        this.timeout = 20000;
-        this.followRedirect = true;
-        //this.maxRedirects = 10;
+        for (let property in config) {
+            if (property != 'useAgent') {
+                this[property] = config[property];
+            }
+        }
     }
     return this;
 };
@@ -45,7 +46,7 @@ module.exports = config => {
             const params = {
                 login: this.randomString(),
                 password: this.randomString(),
-                email: this.randomString() + '@' + EMAIL_DOMAIN,
+                email: this.randomString() + '@' + config.emailDomain,
                 nickname: this.randomString(false),
                 guestAccountId: guestId,
                 lang: 'fr'
@@ -53,7 +54,7 @@ module.exports = config => {
             return new Promise((resolve, reject) => {
                 request.get({
                         url: HAAPI_SETTINGS.VALIDATE_GUEST_URI + '?' + qs.stringify(params)
-                    }.useAgent(agent),
+                    }.useAgent(agent, config.proxy),
                     (err, response) => err ? reject(err) : resolve({ response, params })
                 );
             });
@@ -62,7 +63,7 @@ module.exports = config => {
             return new Promise((resolve, reject) => {
                 request.get({
                         url: HAAPI_SETTINGS.GUEST_CREATION_URI
-                    }.useAgent(agent),
+                    }.useAgent(agent, config.proxy),
                     (err, response) => err ? reject(err) : resolve(response)
                 );
             });
