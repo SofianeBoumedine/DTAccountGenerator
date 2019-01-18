@@ -108,21 +108,27 @@ module.exports = config => {
                         }
                     })
                     .then(data => {
+                        var body = data.response.body.length ? JSON.parse(data.response.body) : {};
+
                         if (data.response.statusCode == 200) {
-                            if (
-                                config.filteredProxyOutputPath && 
-                                config.filteredProxyOutputPath !== false
-                            ) {
+                            if (!body.key) {
+                                if (
+                                    config.filteredProxyOutputPath && 
+                                    config.filteredProxyOutputPath !== false
+                                ) {
+                                    fs.appendFileSync(
+                                        config.filteredProxyOutputPath,
+                                        proxySettings + '\n'
+                                    );
+                                }
                                 fs.appendFileSync(
-                                    config.filteredProxyOutputPath,
-                                    proxySettings + '\n'
+                                    config.accountOutputPath,
+                                    `${data.params.login}:${data.params.password}\n`
                                 );
+                                resolve(data.params);
+                            } else {
+                                reject(body);
                             }
-                            fs.appendFileSync(
-                                config.accountOutputPath,
-                                `${data.params.login}:${data.params.password}\n`
-                            );
-                            resolve(data.params);
                         } else {
                             reject(ERROR.ACCOUNT_VALIDATION);
                         }
