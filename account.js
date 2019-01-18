@@ -109,7 +109,6 @@ module.exports = config => {
                     })
                     .then(data => {
                         if (data.response.statusCode == 200) {
-                            console.log(data.response.body);
                             if (
                                 config.filteredProxyOutputPath && 
                                 config.filteredProxyOutputPath !== false
